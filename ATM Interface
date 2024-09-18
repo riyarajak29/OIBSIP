@@ -1,0 +1,315 @@
+/*
+We have all come across ATMs in our cities and it is built on Java. This complex project consists of
+five different classes and is a console-based application. When the system starts the user is
+prompted with user id and user pin. On entering the details successfully, then ATM functionalities
+are unlocked. The project allows to perform following operations:
+
+Transactions History
+Withdraw
+Deposit
+Transfer
+Quit
+*/
+
+Code:-
+
+import java.io.*;
+import java.util.*;
+
+class Account {
+    static int acc_number = 1111;
+    String acc_holder_name;
+    String username;
+    int pin;
+    double bankbalance;
+    int ac_no;
+
+    void createAcc() {
+        ac_no = acc_number;
+        Scanner sc = new Scanner(System.in);
+        System.out.println("ENTER ACCOUNT HOLDER NAME : ");
+        acc_holder_name = sc.nextLine();
+        System.out.println("ENTER USERNAME : ");
+        username = sc.nextLine();
+        int length_pin = 0;
+
+        do {
+            System.out.println("ENTER SECRET 4 DIGIT PIN : ");
+            pin = sc.nextInt();
+            length_pin = String.valueOf(pin).length();
+        } while (length_pin != 4);
+        System.out.println("ENTER INITIAL DEPOSIT AMOUNT : ");
+        bankbalance = sc.nextDouble();
+        System.out.println("CONGRATULATIONS ACCOUNT SUCCESSFULLY CREATED \n");
+        System.out.println("Account Details : \n" + "Account Number : " + ac_no + "\n Account Holder Name : "
+        + acc_holder_name + "\n Bank Balance : " + bankbalance + "\nTHANK YOU");
+
+        // Creating a file with the account number
+        String fileName = acc_number + ".txt";
+        File file = new File(fileName);
+
+        try {
+            file.createNewFile();
+            FileWriter writer = new FileWriter(file);
+            writer.write("Account Created\n");
+            writer.write("Account Number: " + acc_number + "\n");
+            writer.write("Account Holder Name: " + acc_holder_name + "\n");
+            writer.write("PIN: " + pin + "\n");
+            writer.write("Bank Balance: " + bankbalance + "\n");
+            writer.write("Date: " + new Date() + "\n\n\n");
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred while creating the file " + fileName);
+            e.printStackTrace();
+        }
+        
+        // Sleep to simulate processing time
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        acc_number++;
+    }
+}
+
+class ATM {
+    void withdraw(Account acc) {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Withdraw Money Mode\n");
+        System.out.println("Enter amount in Multiples of 100- ");
+        double amount = in.nextDouble();
+        if (amount % 100 == 0) {
+            if (acc.bankbalance >= amount) {
+                acc.bankbalance -= amount;
+                System.out.println("Your Transaction is Processing\n");
+                try {
+                    // Open the text file for appending new transaction
+                    String fileName = acc.ac_no + ".txt";
+                    FileWriter fileWriter = new FileWriter(fileName, true); // true to append
+                    BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                    bufferedWriter.write("Date: " + new Date() + "\n");
+                    bufferedWriter.write("Withdrawal: " + amount + "\n");
+                    bufferedWriter.write("Account Number: " + acc.ac_no + "\n");
+                    bufferedWriter.write("Remaining Balance: " + acc.bankbalance + "\n\n");
+                    bufferedWriter.close();
+                } catch (IOException e) {
+                    System.out.println("An error occurred while writing to the file.");
+                    e.printStackTrace();
+                }
+                System.out.println("Thank You For Banking With Us!");
+
+                try {
+                    Thread.sleep(6000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Insufficient Funds");
+            }
+        } else {
+            System.out.println("Amount not in multiples of 100!");
+            System.out.println("Try Again!");
+        }
+    }
+
+    void deposit(Account acc) {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Money Deposit Mode\n");
+        System.out.println("Enter amount you want to Deposit: ");
+        double amount = in.nextDouble();
+        acc.bankbalance += amount;
+        try {
+            String fileName = acc.ac_no + ".txt";
+            FileWriter fileWriter = new FileWriter(fileName, true); // true to append
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write("Deposit: " + amount + "\n");
+            bufferedWriter.write("Date: " + new Date() + "\n");
+            bufferedWriter.write("Account Number: " + acc.ac_no + "\n");
+            bufferedWriter.write("Remaining Balance: " + acc.bankbalance + "\n\n");
+            bufferedWriter.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred while writing to the file.");
+            e.printStackTrace();
+        }
+
+        System.out.println("Processing Your Request! Please Wait");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Transaction completed Successfully\n");
+        System.out.println("\n\nThank You for Banking with Us!");
+    }
+
+    void transfer(Account acc1, Account acc2, double amount) {
+        if (acc1.bankbalance >= amount) {
+            acc1.bankbalance -= amount;
+            acc2.bankbalance += amount; // Directly update the recipient's balance
+            try {
+                String fileName1 = acc1.ac_no + ".txt";
+                FileWriter fileWriter1 = new FileWriter(fileName1, true); // true to append
+                BufferedWriter bufferedWriter1 = new BufferedWriter(fileWriter1);
+                bufferedWriter1.write("Transferred: " + amount + "\n");
+                bufferedWriter1.write("Date: " + new Date() + "\n");
+                bufferedWriter1.write("Account Number: " + acc1.ac_no + "\n");
+                bufferedWriter1.write("Remaining Balance: " + acc1.bankbalance + "\n\n");
+                bufferedWriter1.close();
+                
+                // Write to recipient's file
+                String fileName2 = acc2.ac_no + ".txt";
+                FileWriter fileWriter2 = new FileWriter(fileName2, true); // true to append
+                BufferedWriter bufferedWriter2 = new BufferedWriter(fileWriter2);
+                bufferedWriter2.write("Received Transfer: " + amount + "\n");
+                bufferedWriter2.write("Date: " + new Date() + "\n");
+                bufferedWriter2.write("Account Number: " + acc2.ac_no + "\n");
+                bufferedWriter2.write("New Balance: " + acc2.bankbalance + "\n\n");
+                bufferedWriter2.close();
+                
+                System.out.println("Processing Your Request, Please Wait!\n");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } catch (IOException e) {
+                System.out.println("An error occurred while writing to the file.");
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Insufficient Funds for Transfer.");
+        }
+    }
+
+    void displayDetails(Account acc) {
+        System.out.println("Displaying account details\n");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        String fileName = acc.ac_no + ".txt";
+        File file = new File(fileName);
+        try {
+            FileReader fileReader = new FileReader(file);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                System.out.println(line);
+            }
+            bufferedReader.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error reading file:" + e.getMessage());
+        }
+        System.out.println("Screen will automatically timeout after 30 seconds...");
+        try {
+            Thread.sleep(30000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void quit() {
+        System.out.println("Thank You for Banking With Us!");
+    }
+}
+
+class RunATM {
+    int accountSearchById(Account[] ac, int account_number) {
+        for (int i = 0; i < ac.length; i++) {
+            if (account_number == ac[i].ac_no)
+                return i;
+        }
+        return -1;
+    }
+
+    void demo(Account[] ac) {
+        Scanner in = new Scanner(System.in);
+        System.out.println("\n\n\nWelcome to ATM\n");
+        System.out.println("Enter Your Account Number: ");
+        int account_number = in.nextInt();
+        int i = accountSearchById(ac, account_number);
+        if (i == -1) {
+            System.out.println("Account is not registered Yet!");
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return;
+        } else {
+                        System.out.println("Enter Your 4 Digit PIN: ");
+            int inputPin = in.nextInt();
+
+            if (inputPin != ac[i].pin) {
+                System.out.println("Incorrect PIN. Try again.");
+                return;
+            }
+
+            ATM atm = new ATM();
+            int choice;
+            do {
+                System.out.println("\n\nATM Main Menu");
+                System.out.println("1. Withdraw");
+                System.out.println("2. Deposit");
+                System.out.println("3. Transfer");
+                System.out.println("4. Display Account Details");
+                System.out.println("5. Quit");
+                System.out.print("Enter your choice: ");
+                choice = in.nextInt();
+
+                switch (choice) {
+                    case 1:
+                        atm.withdraw(ac[i]);
+                        break;
+                    case 2:
+                        atm.deposit(ac[i]);
+                        break;
+                    case 3:
+                        System.out.println("Enter the recipient's account number for transfer: ");
+                        int recipientAccNo = in.nextInt();
+                        int j = accountSearchById(ac, recipientAccNo);
+                        if (j == -1) {
+                            System.out.println("Recipient account not found.");
+                            break;
+                        }
+                        System.out.println("Enter amount to transfer: ");
+                        double transferAmount = in.nextDouble();
+                        atm.transfer(ac[i], ac[j], transferAmount);
+                        break;
+                    case 4:
+                        atm.displayDetails(ac[i]);
+                        break;
+                    case 5:
+                        atm.quit();
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } while (choice != 5);
+        }
+    }
+}
+
+public class task3 {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter number of accounts you want to create: ");
+        int numAccounts = sc.nextInt();
+        Account[] accounts = new Account[numAccounts];
+
+        for (int i = 0; i < numAccounts; i++) {
+            accounts[i] = new Account();
+            accounts[i].createAcc();
+        }
+
+        RunATM runAtm = new RunATM();
+        while (true) {
+            runAtm.demo(accounts);
+        }
+    }
+}
